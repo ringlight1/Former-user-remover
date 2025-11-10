@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Progress</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+.progress-container {
+    width: 360px;
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    color: #fff;
+    margin: 50px auto;
+}
+
+.progress-bar {
+    width: 100%;
+    background: #333;
+    border-radius: 6px;
+    height: 20px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background-color: #3897f0;
+    border-radius: 6px;
+    transition: width 0.5s;
+}
+
+.progress-text {
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-container">
+    <h2>Processing...</h2>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">0/0 Changes | 0 Errors</div>
+</div>
+
+<script>
+const evtSource = new EventSource("/progress_stream");
+evtSource.onmessage = function(event) {
+    const data = event.data.split(',');
+    const changes = parseInt(data[0]);
+    const errors = parseInt(data[1]);
+    const total = parseInt(data[2]);
+    const percent = Math.round((changes/total)*100);
+    document.getElementById('progressFill').style.width = percent + '%';
+    document.getElementById('progressText').innerText = `${changes}/${total} Changes | ${errors} Errors`;
+    if(changes >= total) evtSource.close();
+};
+</script>
+
+</body>
+</html>
